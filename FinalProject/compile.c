@@ -301,90 +301,83 @@ void write_ob_file(FILE* ob_file, HEAD code, HEAD data, HEAD symbols)
 }
 
 /* write a word to the ob file */
-void write_word(FILE* file, int address, unsigned int word)
+void write_word(FILE* file, int address, unsigned int word, char are)
 {
 	/* the word & 0xffffff is because we write only 6 bytes */
-	fprintf(file, "%07d %06x\n", address, word & 0xffffff);
+	fprintf(file, "%03d %0x %c\n", address, word & 0xffffff, are);
 }
 
 void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbols)
 {
+	char are;
 	int num, succeded, address = command->address, i;
 	unsigned int word = 0;
 	symbol_struct* symbol;
-	word |= command->commandInfo->oppCode << 18;
-	word |= command->commandInfo->funct << 3;
-	word |= 1 << 2;
+	/*write the command*/
+	word |= command->commandInfo->oppCode << 8;
+	word |= command->commandInfo->funct << 4;
 	if (command->arguments_num == 1)
 	{
-		word |= command->arguments[0].addressingMode << 11;
-		if (command->arguments[0].addressingMode == REGISTER)
-		{
-			num = get_number_from_string(command->arguments[0].argument_str, &succeded);
-			word |= num << 8;
-		}
+		word |= command->arguments[0].addressingMode << 1;
+		are = 'A';
 	}
 	else if (command->arguments_num == 2)
 	{
-		word |= command->arguments[0].addressingMode << 16;
-		word |= command->arguments[1].addressingMode << 11;
-		if (command->arguments[0].addressingMode == REGISTER)
-		{
-			num = get_number_from_string(command->arguments[0].argument_str, &succeded);
-			word |= num << 13;
-		}
-		if (command->arguments[1].addressingMode == REGISTER)
-		{
-			num = get_number_from_string(command->arguments[1].argument_str, &succeded);
-			word |= num << 8;
-		}
+		word |= command->arguments[0].addressingMode << 3;
+		word |= command->arguments[1].addressingMode << 1;
+		are = 'A';
 	}
-	write_word(ob_file, address, word);
+	write_word(ob_file, address, word, are);
 	/* write the arguments */
 	for (i = 0; i < command->arguments_num; i++)
 	{
-		if (command->arguments[i].addressingMode != REGISTER)
+		word = 0;
+		address++;
+		switch (command->arguments[i].addressingMode)
 		{
-			word = 0;
-			address++;
-			switch (command->arguments[i].addressingMode)
-			{
-			case REGISTER:
-				/* nothing to do */
-				break;
-			case IMMEDIETE:
+		case REGISTER:
 				num = get_number_from_string(command->arguments[i].argument_str, &succeded);
-				word = num << 3;
-				word |= 1 << 2;
-				break;
-			case DIRECT:
-				symbol = find_symbol(command->arguments[i].argument_str, symbols);
-				if (symbol->kinds & EXERNAL_SYMBOLKIND)
-				{
-					word = 1;
-				}
-				else
-				{
-					word = symbol->value << 3;
-					word |= 1 << 1;
-				}
-				break;
-			case RELATIVE:
-				symbol = find_symbol(command->arguments[i].argument_str, symbols);
-				if (symbol->kinds & EXERNAL_SYMBOLKIND)
-				{
-					word = 1;
-				}
-				else
-				{
-					word = (symbol->value - command->address) << 3;
-					word |= 1 << 2;
-				}
-				break;
+				word = num;
+				are = 'A';
+			break;
+		case IMMEDIETE:
+			num = get_number_from_string(command->arguments[i].argument_str, &succeded);
+			word = num << 3;
+			word |= 1 << 2;
+			are = 'A';
+			break;
+		case DIRECT:
+			symbol = find_symbol(command->arguments[i].argument_str, symbols);
+			if (symbol->kinds & EXERNAL_SYMBOLKIND)
+			{
+				word = 1;
+				are = 'E';
 			}
-			write_word(ob_file, address, word);
+			else
+			{
+				word = symbol->value << 3;
+				word |= 1 << 1;
+				are = 'A';
+			}
+			break;
+		case RELATIVE:
+			symbol = find_symbol(command->arguments[i].argument_str, symbols);
+			if (symbol->kinds & EXERNAL_SYMBOLKIND)
+			{
+				word = 1;
+				are = 'E';
+			}
+			else
+			{
+				word = (symbol->value - command->address) << 3;
+				word |= 1 << 2;
+				are = 'R';
+			}
+			break;
 		}
+		write_word(ob_file, address, word, are);
 	}
+	
 }
 
 void write_data_to_ob_file(FILE* ob_file, data_struct* ds)
@@ -591,17 +584,11 @@ int get_command_size(command_struct* command)
 	}
 	if (command->arguments_num == 1)
 	{
-		if (command->arguments[0].addressingMode == REGISTER)
-			return 1;
 		return 2;
 	}
 	if (command->arguments_num == 2)
 	{
-		size = 1;
-		if (command->arguments[0].addressingMode != REGISTER)
-			size++;
-		if (command->arguments[1].addressingMode != REGISTER)
-			size++;
+		size = 3;
 		return size;
 	}
 	return 1;
