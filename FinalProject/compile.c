@@ -46,7 +46,7 @@ CommandInfo commandInfos[] =
 	{STOP, "stop", 15, 0, 0}
 };
 
-void compile_files(char *file_names[], int n[umer_of_files)
+void compile_files(char *file_names[], int numer_of_files)
 {
 	int i;
 	/* start from 1 because the first one is the name of this program */
