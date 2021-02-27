@@ -391,14 +391,14 @@ void write_data_to_ob_file(FILE* ob_file, data_struct* ds)
 		for (i = 0; i <= str_len; i++)
 		{
 			word = ds->str_value[i];
-			write_word(ob_file, ds->address + i, word);
+			write_word(ob_file, ds->address + i, word, 'A');
 		}
 		break;
 	case DATA_DATAKIND:
 		for (i = 0; i < ds->int_values_num; i++)
 		{
 			word = ds->int_values[i];
-			write_word(ob_file, ds->address + i, word);
+			write_word(ob_file, ds->address + i, word, 'A');
 		}
 		break;
 	default:
