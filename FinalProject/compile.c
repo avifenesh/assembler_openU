@@ -15,10 +15,10 @@ CommandInfo commandInfos[] =
 	{CMP, "cmp", 1, 0, 2,
 		{{3, {IMMEDIETE, DIRECT, REGISTER}, SOURCE},
 		{3, {IMMEDIETE, DIRECT, REGISTER}, TARGET}}},
-	{ADD, "add", 2, 1, 2,
+	{ADD, "add", 2, 10, 2,
 		{{3, {IMMEDIETE, DIRECT, REGISTER}, SOURCE},
 		{2, {DIRECT, REGISTER}, TARGET}}},
-	{SUB, "sub", 2, 2, 2,
+	{SUB, "sub", 2, 11, 2,
 		{{3, {IMMEDIETE, DIRECT, REGISTER}, SOURCE},
 		{2, {DIRECT, REGISTER}, TARGET}}},
 	{LEA, "lea", 4, 0, 2,
@@ -46,7 +46,7 @@ CommandInfo commandInfos[] =
 	{STOP, "stop", 15, 0, 0}
 };
 
-void compile_files(char *file_names[], int n[umer_of_files)
+void compile_files(char *file_names[], int numer_of_files)
 {
 	int i;
 	/* start from 1 because the first one is the name of this program */
@@ -301,90 +301,83 @@ void write_ob_file(FILE* ob_file, HEAD code, HEAD data, HEAD symbols)
 }
 
 /* write a word to the ob file */
-void write_word(FILE* file, int address, unsigned int word)
+void write_word(FILE* file, int address, unsigned int word, char are)
 {
 	/* the word & 0xffffff is because we write only 6 bytes */
-	fprintf(file, "%07d %06x\n", address, word & 0xffffff);
+	fprintf(file, "%04d %X %c\n", address, word, are);
 }
 
 void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbols)
 {
+	char are;
 	int num, succeded, address = command->address, i;
 	unsigned int word = 0;
 	symbol_struct* symbol;
-	word |= command->commandInfo->oppCode << 18;
-	word |= command->commandInfo->funct << 3;
-	word |= 1 << 2;
+	/*write the command*/
+	word |= command->commandInfo->oppCode << 8;
+	word |= command->commandInfo->funct << 4;
 	if (command->arguments_num == 1)
 	{
-		word |= command->arguments[0].addressingMode << 11;
-		if (command->arguments[0].addressingMode == REGISTER)
-		{
-			num = get_number_from_string(command->arguments[0].argument_str, &succeded);
-			word |= num << 8;
-		}
+		word |= command->arguments[0].addressingMode;
+		are = 'A';
 	}
 	else if (command->arguments_num == 2)
 	{
-		word |= command->arguments[0].addressingMode << 16;
-		word |= command->arguments[1].addressingMode << 11;
-		if (command->arguments[0].addressingMode == REGISTER)
-		{
-			num = get_number_from_string(command->arguments[0].argument_str, &succeded);
-			word |= num << 13;
-		}
-		if (command->arguments[1].addressingMode == REGISTER)
-		{
-			num = get_number_from_string(command->arguments[1].argument_str, &succeded);
-			word |= num << 8;
-		}
+		word |= command->arguments[0].addressingMode << 2;
+		word |= command->arguments[1].addressingMode;
+		are = 'A';
 	}
-	write_word(ob_file, address, word);
+	write_word(ob_file, address, word, are);
 	/* write the arguments */
 	for (i = 0; i < command->arguments_num; i++)
 	{
-		if (command->arguments[i].addressingMode != REGISTER)
+		word = 0;
+		address++;
+		switch (command->arguments[i].addressingMode)
 		{
-			word = 0;
-			address++;
-			switch (command->arguments[i].addressingMode)
-			{
-			case REGISTER:
-				/* nothing to do */
-				break;
-			case IMMEDIETE:
+		case REGISTER:
 				num = get_number_from_string(command->arguments[i].argument_str, &succeded);
-				word = num << 3;
-				word |= 1 << 2;
-				break;
-			case DIRECT:
-				symbol = find_symbol(command->arguments[i].argument_str, symbols);
-				if (symbol->kinds & EXERNAL_SYMBOLKIND)
-				{
-					word = 1;
-				}
-				else
-				{
-					word = symbol->value << 3;
-					word |= 1 << 1;
-				}
-				break;
-			case RELATIVE:
-				symbol = find_symbol(command->arguments[i].argument_str, symbols);
-				if (symbol->kinds & EXERNAL_SYMBOLKIND)
-				{
-					word = 1;
-				}
-				else
-				{
-					word = (symbol->value - command->address) << 3;
-					word |= 1 << 2;
-				}
-				break;
+				word |= 1 << num;
+				are = 'A';
+			break;
+		case IMMEDIETE:
+			num = get_number_from_string(command->arguments[i].argument_str, &succeded);
+			word = num << 3;
+			word |= 1 << 2;
+			are = 'A';
+			break;
+		case DIRECT:
+			symbol = find_symbol(command->arguments[i].argument_str, symbols);
+			if (symbol->kinds & EXERNAL_SYMBOLKIND)
+			{
+				word = 1;
+				are = 'E';
 			}
-			write_word(ob_file, address, word);
+			else
+			{
+				word = symbol->value << 3;
+				word |= 1 << 1;
+				are = 'A';
+			}
+			break;
+		case RELATIVE:
+			symbol = find_symbol(command->arguments[i].argument_str, symbols);
+			if (symbol->kinds & EXERNAL_SYMBOLKIND)
+			{
+				word = 1;
+				are = 'E';
+			}
+			else
+			{
+				word = (symbol->value - command->address) << 3;
+				word |= 1 << 2;
+				are = 'R';
+			}
+			break;
 		}
+		write_word(ob_file, address, word, are);
 	}
+	
 }
 
 void write_data_to_ob_file(FILE* ob_file, data_struct* ds)
@@ -398,14 +391,14 @@ void write_data_to_ob_file(FILE* ob_file, data_struct* ds)
 		for (i = 0; i <= str_len; i++)
 		{
 			word = ds->str_value[i];
-			write_word(ob_file, ds->address + i, word);
+			write_word(ob_file, ds->address + i, word, 'A');
 		}
 		break;
 	case DATA_DATAKIND:
 		for (i = 0; i < ds->int_values_num; i++)
 		{
 			word = ds->int_values[i];
-			write_word(ob_file, ds->address + i, word);
+			write_word(ob_file, ds->address + i, word, 'A');
 		}
 		break;
 	default:
@@ -591,17 +584,11 @@ int get_command_size(command_struct* command)
 	}
 	if (command->arguments_num == 1)
 	{
-		if (command->arguments[0].addressingMode == REGISTER)
-			return 1;
 		return 2;
 	}
 	if (command->arguments_num == 2)
 	{
-		size = 1;
-		if (command->arguments[0].addressingMode != REGISTER)
-			size++;
-		if (command->arguments[1].addressingMode != REGISTER)
-			size++;
+		size = 3;
 		return size;
 	}
 	return 1;
@@ -725,7 +712,7 @@ int fill_relative_addressing_mode(argument_struct* argument)
 {
 	if (strlen(argument->argument_str) < 2)
 		return 0;
-	if (argument->argument_str[0] != '&')
+	if (argument->argument_str[0] != '%')
 		return 0;
 	if (!symbol_is_legal(&argument->argument_str[1]))
 		return 0;
