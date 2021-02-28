@@ -712,7 +712,7 @@ int fill_relative_addressing_mode(argument_struct* argument)
 {
 	if (strlen(argument->argument_str) < 2)
 		return 0;
-	if (argument->argument_str[0] != '&')
+	if (argument->argument_str[0] != '%')
 		return 0;
 	if (!symbol_is_legal(&argument->argument_str[1]))
 		return 0;
