@@ -357,7 +357,7 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			{
 				word = symbol->value << 3;
 				word |= 1 << 1;
-				are = 'A';
+				are = 'R';
 			}
 			break;
 		case RELATIVE:
@@ -371,7 +371,7 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			{
 				word = (symbol->value - command->address) << 3;
 				word |= 1 << 2;
-				are = 'R';
+				are = 'A';
 			}
 			break;
 		}
