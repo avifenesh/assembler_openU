@@ -1,3 +1,4 @@
+/*28/2*/
 #include "compile.h"
 #include "general_functions.h"
 #include "list.h"
@@ -342,21 +343,19 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			break;
 		case IMMEDIETE:
 			num = get_number_from_string(command->arguments[i].argument_str, &succeded);
-			word = num << 3;
-			word |= 1 << 2;
+			word = num;
 			are = 'A';
 			break;
 		case DIRECT:
 			symbol = find_symbol(command->arguments[i].argument_str, symbols);
 			if (symbol->kinds & EXERNAL_SYMBOLKIND)
 			{
-				word = 1;
+				word = 0;
 				are = 'E';
 			}
 			else
 			{
-				word = symbol->value << 3;
-				word |= 1 << 1;
+				word = symbol->value;
 				are = 'R';
 			}
 			break;
@@ -364,13 +363,12 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			symbol = find_symbol(command->arguments[i].argument_str, symbols);
 			if (symbol->kinds & EXERNAL_SYMBOLKIND)
 			{
-				word = 1;
+				word = 0;
 				are = 'E';
 			}
 			else
 			{
-				word = (symbol->value - command->address) << 3;
-				word |= 1 << 2;
+				word =(symbol->value - command->address);/*צריך להפוך למשלים ל2*/
 				are = 'A';
 			}
 			break;
