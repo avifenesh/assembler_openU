@@ -304,7 +304,7 @@ void write_ob_file(FILE* ob_file, HEAD code, HEAD data, HEAD symbols)
 void write_word(FILE* file, int address, unsigned int word, char are)
 {
 	/* the word & 0xffffff is because we write only 6 bytes */
-	fprintf(file, "%03d %0x %c\n", address, word & 0xffffff, are);
+	fprintf(file, "%04d 0x%03X %c\n", address, (word & 0xFF), are);
 }
 
 void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbols)
