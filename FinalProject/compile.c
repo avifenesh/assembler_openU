@@ -15,10 +15,10 @@ CommandInfo commandInfos[] =
 	{CMP, "cmp", 1, 0, 2,
 		{{3, {IMMEDIETE, DIRECT, REGISTER}, SOURCE},
 		{3, {IMMEDIETE, DIRECT, REGISTER}, TARGET}}},
-	{ADD, "add", 2, 1, 2,
+	{ADD, "add", 2, 10, 2,
 		{{3, {IMMEDIETE, DIRECT, REGISTER}, SOURCE},
 		{2, {DIRECT, REGISTER}, TARGET}}},
-	{SUB, "sub", 2, 2, 2,
+	{SUB, "sub", 2, 11, 2,
 		{{3, {IMMEDIETE, DIRECT, REGISTER}, SOURCE},
 		{2, {DIRECT, REGISTER}, TARGET}}},
 	{LEA, "lea", 4, 0, 2,
@@ -304,7 +304,7 @@ void write_ob_file(FILE* ob_file, HEAD code, HEAD data, HEAD symbols)
 void write_word(FILE* file, int address, unsigned int word, char are)
 {
 	/* the word & 0xffffff is because we write only 6 bytes */
-	fprintf(file, "%04d 0x%03X %c\n", address, (word & 0xFF), are);
+	fprintf(file, "%04d %X %c\n", address, word, are);
 }
 
 void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbols)
@@ -318,13 +318,13 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 	word |= command->commandInfo->funct << 4;
 	if (command->arguments_num == 1)
 	{
-		word |= command->arguments[0].addressingMode << 1;
+		word |= command->arguments[0].addressingMode;
 		are = 'A';
 	}
 	else if (command->arguments_num == 2)
 	{
-		word |= command->arguments[0].addressingMode << 3;
-		word |= command->arguments[1].addressingMode << 1;
+		word |= command->arguments[0].addressingMode << 2;
+		word |= command->arguments[1].addressingMode;
 		are = 'A';
 	}
 	write_word(ob_file, address, word, are);
@@ -337,7 +337,7 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 		{
 		case REGISTER:
 				num = get_number_from_string(command->arguments[i].argument_str, &succeded);
-				word = num;
+				word |= 1 << num;
 				are = 'A';
 			break;
 		case IMMEDIETE:
