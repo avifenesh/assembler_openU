@@ -344,6 +344,7 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 		case IMMEDIETE:
 			num = get_number_from_string(command->arguments[i].argument_str, &succeded);
 			word = num;
+			/*word &= (7<<3);*/ /*השורה הזאת מדפיסה FFFFFFFA*/
 			are = 'A';
 			break;
 		case DIRECT:
@@ -368,8 +369,10 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			}
 			else
 			{
-				word =(symbol->value - command->address);/*צריך להפוך למשלים ל2*/
-				word = 
+				word =(symbol->value - command->address);
+				word = ~word;/*היפוך למשלים של 2*/
+				word +=1;
+				/*word &= (7<<3);*/ /*השורה הזאת מדפיסה FFFFFFFA*/
 				are = 'A';
 			}
 			break;
