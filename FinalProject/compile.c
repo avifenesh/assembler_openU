@@ -166,12 +166,12 @@ void write_ent_file(FILE* ent_file, HEAD code, HEAD symbols)
 	if (cs == NULL)
 		return;
 	if (cs->kinds & ENTRY_SYMBOLKIND)
-		fprintf(ent_file, "%s %07d\n", cs->name, cs->value);
+		fprintf(ent_file, "%s %04d\n", cs->name, cs->value);
 	while (HasMoreInList(&_node))
 	{
 		cs = GetNextFromList(&_node);
 		if (cs->kinds & ENTRY_SYMBOLKIND)
-			fprintf(ent_file, "%s %07d\n", cs->name, cs->value);
+			fprintf(ent_file, "%s %04d\n", cs->name, cs->value);
 	}
 }
 
@@ -187,7 +187,7 @@ void write_symbol_to_ext_file_from_command(FILE* ext_file, symbol_struct* symbol
 		{
 			if (strcmp(symbol->name, command->arguments[i].argument_str) == 0)
 			{
-				fprintf(ext_file, "%s %07d\n", symbol->name, command->address + i + 1);
+				fprintf(ext_file, "%s %04d\n", symbol->name, command->address + i + 1);
 			}
 		}
 	}
