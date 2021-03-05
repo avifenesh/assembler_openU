@@ -67,8 +67,8 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 void write_data_to_ob_file(FILE* ob_file, data_struct* ds);
 
 /* write the .ext file */
-void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols);
+void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols, char* file_name);
 /* write the .ent file */
-void write_ent_file(FILE* ent_file, HEAD code, HEAD symbols);
+void write_ent_file(FILE* ent_file, HEAD code, HEAD symbols, char* file_name);
 
 #endif

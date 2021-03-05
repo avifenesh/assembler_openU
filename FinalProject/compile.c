@@ -229,7 +229,7 @@ int write_symbol_to_ext_file(FILE* ext_file, symbol_struct* symbol, HEAD code)
 
 void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols, char* file_name)
 {
-	good = 0;
+	int good = 0;
 	ELM node;
 	symbol_struct* cs = GetFirstFromList(symbols, &node);
 	if (cs == NULL){
