@@ -369,8 +369,7 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			else
 			{
 				word =(symbol->value - command->address);
-				word = ~word;
-				word +=1;
+				word-=1;
 				are = 'A';
 			}
 			break;
