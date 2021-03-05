@@ -1,4 +1,4 @@
-/*28/2*/
+/*1/3*/
 #include "compile.h"
 #include "general_functions.h"
 #include "list.h"
@@ -305,7 +305,7 @@ void write_ob_file(FILE* ob_file, HEAD code, HEAD data, HEAD symbols)
 void write_word(FILE* file, int address, unsigned int word, char are)
 {
 	/* the word & 0xffffff is because we write only 6 bytes */
-	fprintf(file, "%04d %X %c\n", address, word, are);
+	fprintf(file, "%04d %03X %c\n", address, word & 0xfff, are);
 }
 
 void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbols)
@@ -368,7 +368,8 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			}
 			else
 			{
-				word =(symbol->value - command->address);/*צריך להפוך למשלים ל2*/
+				word =(symbol->value - command->address);
+				word-=1;
 				are = 'A';
 			}
 			break;
