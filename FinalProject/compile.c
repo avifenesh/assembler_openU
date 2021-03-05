@@ -305,7 +305,7 @@ void write_ob_file(FILE* ob_file, HEAD code, HEAD data, HEAD symbols)
 void write_word(FILE* file, int address, unsigned int word, char are)
 {
 	/* the word & 0xffffff is because we write only 6 bytes */
-	fprintf(file, "%04d %03X %c\n", address, word, are);
+	fprintf(file, "%04d %03X %c\n", address, word & 0xfff, are);
 }
 
 void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbols)
@@ -344,7 +344,6 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 		case IMMEDIETE:
 			num = get_number_from_string(command->arguments[i].argument_str, &succeded);
 			word = num;
-			/*word &= (7<<3);*/ /*השורה הזאת מדפיסה FFFFFFFA*/
 			are = 'A';
 			break;
 		case DIRECT:
@@ -370,9 +369,8 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			else
 			{
 				word =(symbol->value - command->address);
-				word = ~word;/*היפוך למשלים של 2*/
+				word = ~word;
 				word +=1;
-				/*word &= (7<<3);*/ /*השורה הזאת מדפיסה FFFFFFFA*/
 				are = 'A';
 			}
 			break;
