@@ -60,10 +60,10 @@ typedef enum ArgumentKind
 /* enum for data kinds */
 typedef enum DataKind
 {
-	STRING_DATAKIND,
-	DATA_DATAKIND,
-	ENTRY_DATAKIND,
-	EXTERNAL_DATAKIND
+	STRING_DATAKIND = 1,
+	DATA_DATAKIND = STRING_DATAKIND <<1,
+	ENTRY_DATAKIND = DATA_DATAKIND <<1,
+	EXTERNAL_DATAKIND = ENTRY_DATAKIND <<1
 } DataKind;
 
 /* enum for symbol kinds */

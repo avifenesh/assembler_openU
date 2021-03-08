@@ -1,7 +1,7 @@
 ; file test1.as
 
-.entry LIST
-.extern W
+	.entry LIST
+	.extern W
 MAIN: add r3, LIST
 LOOP: prn #48
 lea W, r6
@@ -12,12 +12,12 @@ bne END
 cmp K, #-6
 bne %END
 dec W
-.entry MAIN
+	.entry MAIN
 jmp %LOOP
 add L3, L3
 END: stop
 STR: .string "abcd"
 LIST: .data 6, -9
-.data -100
+	.data -100
 K: .data 31
-.extern L3
+	.extern L3

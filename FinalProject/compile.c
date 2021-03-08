@@ -128,7 +128,7 @@ void compile_file(char *file_name)
 		ext_file = fopen(ext_file_name, "w");
 		if (ext_file != NULL)
 		{
-			write_ext_file(ext_file, code, symbols);
+			write_ext_file(ext_file, code, symbols, ext_file_name);
 			fclose(ext_file);
 		}
 		else
@@ -140,7 +140,7 @@ void compile_file(char *file_name)
 		ent_file = fopen(ent_file_name, "w");
 		if (ent_file != NULL)
 		{
-			write_ent_file(ent_file, code, symbols);
+			write_ent_file(ent_file, code, symbols, ent_file_name);
 			fclose(ent_file);
 		}
 		else
@@ -159,27 +159,42 @@ void compile_file(char *file_name)
 	DestroyList(symbols);
 }
 
-void write_ent_file(FILE* ent_file, HEAD code, HEAD symbols)
+void write_ent_file(FILE* ent_file, HEAD code, HEAD symbols, char* file_name)
 {
+	int good=0;
 	ELM _node;
 	symbol_struct* cs = GetFirstFromList(symbols, &_node);
-	if (cs == NULL)
-		return;
-	if (cs->kinds & ENTRY_SYMBOLKIND)
-		fprintf(ent_file, "%s %07d\n", cs->name, cs->value);
+	if (cs == NULL){
+		if (remove(file_name) == 0) 
+     		printf("Deleted successfully"); 
+   		else
+      		printf("Unable to delete the file"); 
+		return;}
+
+	if (cs->kinds & ENTRY_SYMBOLKIND){
+	    good = 1;
+		fprintf(ent_file, "%s %04d\n", cs->name, cs->value);}
 	while (HasMoreInList(&_node))
 	{
 		cs = GetNextFromList(&_node);
-		if (cs->kinds & ENTRY_SYMBOLKIND)
-			fprintf(ent_file, "%s %07d\n", cs->name, cs->value);
+		if (cs->kinds & ENTRY_SYMBOLKIND){
+			good = 1;
+			fprintf(ent_file, "%s %04d\n", cs->name, cs->value);}
+	}
+	if (good == 0){
+		if (remove(file_name) == 0) 
+     		printf("Deleted successfully"); 
+   		else
+      		printf("Unable to delete the file"); 
 	}
 }
 
-void write_symbol_to_ext_file_from_command(FILE* ext_file, symbol_struct* symbol, command_struct* command)
+int write_symbol_to_ext_file_from_command(FILE* ext_file, symbol_struct* symbol, command_struct* command)
 {
 	int i;
+	
 	if (!(symbol->kinds & EXERNAL_SYMBOLKIND))
-		return;
+		return 0;
 	for (i = 0; i < command->arguments_num; i++)
 	{
 		if ((command->arguments[i].addressingMode == DIRECT) ||
@@ -187,40 +202,58 @@ void write_symbol_to_ext_file_from_command(FILE* ext_file, symbol_struct* symbol
 		{
 			if (strcmp(symbol->name, command->arguments[i].argument_str) == 0)
 			{
-				fprintf(ext_file, "%s %07d\n", symbol->name, command->address + i + 1);
+				fprintf(ext_file, "%s %04d\n", symbol->name, command->address + i + 1);
+				return 1;
 			}
 		}
 	}
+	return 0;
 }
 
-void write_symbol_to_ext_file(FILE* ext_file, symbol_struct* symbol, HEAD code)
+int write_symbol_to_ext_file(FILE* ext_file, symbol_struct* symbol, HEAD code)
 {
+	int good = 0;
 	ELM node;
 	command_struct* command = GetFirstFromList(code, &node);
 	if (command != NULL)
 	{
-		write_symbol_to_ext_file_from_command(ext_file, symbol, command);
+		good += write_symbol_to_ext_file_from_command(ext_file, symbol, command);
 	}
 	while (HasMoreInList(&node))
 	{
 		command = GetNextFromList(&node);
-		write_symbol_to_ext_file_from_command(ext_file, symbol, command);
+		good += write_symbol_to_ext_file_from_command(ext_file, symbol, command);
 	}
+	return good;
 }
 
-void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols)
+void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols, char* file_name)
 {
 	ELM node;
-	symbol_struct* cs = GetFirstFromList(symbols, &node);
-	if (cs == NULL)
-		return;
-	write_symbol_to_ext_file(ext_file, cs, code);
+	int good;
+	symbol_struct* cs;
+
+	good = 0;
+	cs = GetFirstFromList(symbols, &node);
+	if (cs == NULL){
+		if (remove(file_name) == 0) 
+     		printf("Deleted successfully"); 
+   		else
+      		printf("Unable to delete the file"); 
+		return;}
+
+	good += write_symbol_to_ext_file(ext_file, cs, code);
 	while (HasMoreInList(&node))
 	{
 		cs = GetNextFromList(&node);
-		write_symbol_to_ext_file(ext_file, cs, code);
-		if (cs == NULL)
-			return;
+		good += write_symbol_to_ext_file(ext_file, cs, code);
+		if (cs == NULL){
+			if (good == 0){
+				if (remove(file_name) == 0) 
+     				printf("Deleted successfully"); 
+   		    	else
+      				printf("Unable to delete the file");
+			return;}}
 	}
 }
 
@@ -328,7 +361,7 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 		word |= command->arguments[1].addressingMode;
 		are = 'A';
 	}
-	write_word(ob_file, address, word, are);
+	write_word(ob_file, address, word, 'A');
 	/* write the arguments */
 	for (i = 0; i < command->arguments_num; i++)
 	{
