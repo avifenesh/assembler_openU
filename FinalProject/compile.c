@@ -378,7 +378,12 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			break;
 		case DIRECT:
 			symbol = find_symbol(command->arguments[i].argument_str, symbols);
-			if (symbol->kinds & EXERNAL_SYMBOLKIND)
+			if(symbol->kinds & CODE_SYMBOLKIND)
+			{
+				word = symbol->value;
+				are = 'e';
+			}
+			else if (symbol->kinds & EXERNAL_SYMBOLKIND)
 			{
 				word = 0;
 				are = 'E';
