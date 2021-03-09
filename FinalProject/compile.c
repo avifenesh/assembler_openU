@@ -229,9 +229,12 @@ int write_symbol_to_ext_file(FILE* ext_file, symbol_struct* symbol, HEAD code)
 
 void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols, char* file_name)
 {
-	good = 0;
 	ELM node;
-	symbol_struct* cs = GetFirstFromList(symbols, &node);
+	int good;
+	symbol_struct* cs;
+
+	good = 0;
+	cs = GetFirstFromList(symbols, &node);
 	if (cs == NULL){
 		if (remove(file_name) == 0) 
      		printf("Deleted successfully"); 
@@ -358,7 +361,7 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 		word |= command->arguments[1].addressingMode;
 		are = 'A';
 	}
-	write_word(ob_file, address, word, are);
+	write_word(ob_file, address, word, 'A');
 	/* write the arguments */
 	for (i = 0; i < command->arguments_num; i++)
 	{
