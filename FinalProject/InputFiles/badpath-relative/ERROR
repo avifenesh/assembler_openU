@@ -1,0 +1,3 @@
+Start processing assembler file badpath-relative.as
+Error in file badpath-relative.as, line 36: Bad addressing mode for argument
+Finish processing assembler file badpath-relative.as with errors
