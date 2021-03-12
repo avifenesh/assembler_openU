@@ -4,94 +4,92 @@
 #include "constants.h"
 #include "list.h"
 
-/* struct for the general information about
-a specific argument in a specific command */
+/*struct for the information of arguments in command*/
 typedef struct
 {
-	/* the number of legal addressing modes for this argument */
+	/*number of valid adrresing-mode for this argument*/
 	int legalAddressingModesNum;
-	/* the legal addressing modes for this argument */
+	/* the specific adreesing-mode for this argument*/
 	int legalAddressingModes[ADDRESSING_MODES_NUM];
-	/* the kind of the argument (source or target) */
+	/*argument is source or target*/
 	ArgumentKind argumentKind;
 } ArgumentInfo;
 
-/* struct for the general information about a specific
-command type */
+/* struct for information for each command type */
 typedef struct
 {
-	/* the type of the command */
+	/*type of the command*/
 	CommandType commandType;
-	/* the name of the command */
+	/*name of command*/
 	char* commandName;
-	/* the opp code */
+	/*opp-code*/
 	int oppCode;
-	/* the funct */
+	/*funct*/
 	int funct;
-	/* the legal number of arguments */
+	/*number of leagal args*/
 	int argumentInfosNum;
-	/* the information about the arguments */
+	/*information of args*/
 	ArgumentInfo argumentInfos[MAX_ARGUMENTS_NUMBER];
 } CommandInfo;
 
-/* struct for holding an argument that was read from a file */
+/*struct for hold args that read from the file*/
 typedef struct argument_struct {
 	char argument_str[MAX_ARGUMENT_LEN];
 	AddressingMode addressingMode;
 } argument_struct;
 
-/* struct for holding a command that was read from a file */
+/*struct for hold command that read from the file*/
 typedef struct command_struct {
 	char label[SYMBOL_MAX_LEN];
-	/* the legal info about this command */
+	/*valid info for this command*/
 	CommandInfo* commandInfo;
-	/* the number of arguments */
+	/*num of args*/
 	int arguments_num;
-	/* the address of the command */
+	/*address of command*/
 	int address;
-	/* the line number of the command in the file */
+	/*number of line the command take in file*/
 	int line_number;
 	/* the arguments */
 	struct argument_struct arguments[MAX_ARGUMENTS_NUMBER];
 } command_struct;
 
-/* struct for a symbol */
+/*symbol struct*/
 typedef struct symbol_struct {
 	char name[SYMBOL_MAX_LEN];
-	/* the address of the symbol */
+	/*address of symbol*/
 	int value;
-	/* a bit array of kinds of this symbol */
+	/*bits array for kind of symbol*/
 	int kinds;
 } symbol_struct;
 
-/* struct for .data and .string */
+/*data and string struct*/
 typedef struct data_struct {
-	/* the name */
+	/*name*/
 	char name[SYMBOL_MAX_LEN];
-	/* the string for .string*/
+	/*the string (if ist string)*/
 	char str_value[LINE_LEN];
-	/* the int values for .data */
+	/*the int value (if data)*/
 	int int_values[MAX_INTS_IN_DATA];
-	/* the number of int values for .data */
+	/*number of values for data*/
 	int int_values_num;
-	/* the address of this data */
+	/*addres of data*/
 	int address;
-	/* the kind of this data */
+	/*kind of data*/
 	DataKind kind;
 } data_struct;
 
-/* functions for the lists */
-/* create and initialize a command_struct */
+/*funcs for lists*/
+/*create and initialize  command struct*/
 ELM create_command_struct();
-/* free a command_struct */
+/*free command struct*/
 void free_command_struct(ELM);
-/* create and initialize a symbol_struct */
+/*create and initialize symbol struct*/
 ELM create_symbol_struct();
-/* free a symbol_struct */
+/*free symbol struct*/
 void free_symbol_struct(ELM);
-/* create and initialize a data_struct */
+/*create and initialize data struct*/
 ELM create_data_struct();
-/* free a data_struct */
+/*free data struct*/
 void free_data_struct(ELM);
 
 #endif

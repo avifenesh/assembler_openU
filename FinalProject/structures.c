@@ -1,6 +1,8 @@
 #include "structures.h"
 #include <malloc.h>
 
+/*comments of every method in structures.h*/
+
 ELM create_command_struct()
 {
 	command_struct* cs = malloc(sizeof(command_struct));

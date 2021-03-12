@@ -3,23 +3,23 @@
 #include <stdlib.h>
 #include <malloc.h>
 
-/* struct for a node in the list */
+/*struct for node in list*/
 typedef struct node
 {
-	/* the value stored in the node */
+	/*the value stored in the node*/
 	ELM val;
-	/* pointer to the next node */
+	/*pointer to the next node*/
 	struct node* next;
 } node;
 
-/* struct for the root of the list */
+/*struct for the root of the list */
 typedef struct list_root
 {
-	/* pointer to the first node in the list */
+	/* pointer to the first node in list */
 	node* head;
-	/* pointer to a function that creates a new element in the list */
+	/* pointer to a function that creates a new elm in the list */
 	ELM(*create_elm)();
-	/* pointer to a function that frees an element */
+	/* pointer to a function that frees an elm */
 	void(*free_elm)(ELM);
 } list_root;
 
@@ -110,7 +110,7 @@ ELM AppendElementToList(HEAD head)
 	}
 	if (prev_node == NULL)
 		return NULL;
-	/* need to add in the end of the list */
+	/*add in the end of list*/
 	prev_node->next = new_node;
 	return elm;
 }
