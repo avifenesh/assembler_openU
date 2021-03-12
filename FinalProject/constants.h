@@ -1,20 +1,20 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-/* maximum file name length */
+/* max file name length */
 #define MAXIMUM_FILE_NAME 1000
-/* maximum line length */
+/* max line length */
 #define LINE_LEN 80
-/* maximum symbol name length */
+/* max symbol name length */
 #define SYMBOL_MAX_LEN 31
-/* maximum argument length */
+/* max argument length */
 #define MAX_ARGUMENT_LEN 100
-/* maximum number of arguments */
+/* max number of arguments */
 #define MAX_ARGUMENTS_NUMBER 2
-/* maximum number of integers in .data */
+/* max number of integers in .data */
 #define MAX_INTS_IN_DATA 40
 
-/* enum for command types */
+/*command types enum*/
 typedef enum CommandType
 {
 	MOV,
@@ -35,13 +35,13 @@ typedef enum CommandType
 	STOP
 } CommandType;
 
-/* the names of the "data" commands */
+/*kinds of the "data" commands*/
 #define STRING_CMD ".string"
 #define DATA_CMD ".data"
 #define ENTRY_CMD ".entry"
 #define EXTERN_CMD ".extern"
 
-/* enum for addressing modes */
+/*addressing modes enum*/
 typedef enum AddressingMode
 {
 	IMMEDIETE,
@@ -50,14 +50,14 @@ typedef enum AddressingMode
 	REGISTER
 } AddressingMode;
 
-/* enum for argument kind (source or target) */
+/*argument kind enum*/
 typedef enum ArgumentKind
 {
 	SOURCE,
 	TARGET
 } ArgumentKind;
 
-/* enum for data kinds */
+/*data kinds enum*/
 typedef enum DataKind
 {
 	STRING_DATAKIND = 1,
@@ -66,7 +66,7 @@ typedef enum DataKind
 	EXTERNAL_DATAKIND = ENTRY_DATAKIND <<1
 } DataKind;
 
-/* enum for symbol kinds */
+/*symbol kinds enum*/
 typedef enum SymbolKind
 {
 	CODE_SYMBOLKIND = 1,
@@ -75,7 +75,7 @@ typedef enum SymbolKind
 	EXERNAL_SYMBOLKIND = ENTRY_SYMBOLKIND << 1
 } SymbolKind;
 
-/* the number of addressing modes */
+/*number of addressing modes*/
 #define ADDRESSING_MODES_NUM 4
 
 #endif

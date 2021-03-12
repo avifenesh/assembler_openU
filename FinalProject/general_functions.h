@@ -1,22 +1,17 @@
 #ifndef GENERAL_FUNCTIONS_H
 #define GENERAL_FUNCTIONS_H
 
-/* return 1 if the character c is a space or a tab */
+/*1 if the character is a space or a tab*/
 int spaceOrTab(char c);
-/* cleans spaces and tabs from the beginning and the end
-of src into dst */
+/*clean from space at the begin and at the end and copy from src to dst*/
 void clean(char* src, char* dst);
-/* return 1 if c is a letter */
+/*1 if letter*/
 int is_letter(char c);
-/* return 1 if c is a number */
+/*return 1 if number*/
 int is_number(char c);
-/* parse the num_str string and if it contains a number,
-return the number.
-the succeded will be 1 if the num_str string
-contains a number. otherwise succeded will be 0.
-*/
+/* check if num_str contain a number if it is the succeded will be 1. otherwise succeded will be 0.*/
 int get_number_from_string(char* num_str, int* succeded);
-/* move the str string num steps to the left */
+/* move the str string number of steps to left */
 void shift_left(char* str, int num);
 
 #endif
