@@ -1,4 +1,3 @@
-/*1/3*/
 #include "compile.h"
 #include "general_functions.h"
 #include "list.h"
@@ -7,7 +6,7 @@
 #include <string.h>
 #include <malloc.h>
 
-/* a "table" of the information of each kind of command */
+/* a "table" of the info of each optional command */
 CommandInfo commandInfos[] =
 {
 	{MOV, "mov", 0, 0, 2,
@@ -47,16 +46,18 @@ CommandInfo commandInfos[] =
 	{STOP, "stop", 15, 0, 0}
 };
 
+/*loop that call compiling method for each file*/
 void compile_files(char *file_names[], int numer_of_files)
 {
 	int i;
-	/* start from 1 because the first one is the name of this program */
+	/* start from 1 because the first one is the name of the program */
 	for (i = 1; i < numer_of_files; i++)
 	{
 		compile_file(file_names[i]);
 	}
 }
 
+/*call the function for each file need to compile, main method*/
 void compile_file(char *file_name)
 {
 	/* file names */
@@ -97,7 +98,7 @@ void compile_file(char *file_name)
 		good = good && analyze_line(assembler_file_name, line_number, cleaned_line, code, data, symbols, &address);
 	}
 	fclose(assembler_file);
-	/* go over each command and verify that its OK */
+	/* go over commands and check if its valid*/
 	temp_command = GetFirstFromList(code, &_node);
 	if (temp_command != NULL)
 	{
@@ -108,7 +109,7 @@ void compile_file(char *file_name)
 			good = good && check_command(assembler_file_name, temp_command, symbols);
 		}
 	}
-	/* write the output files only if there wasn't any error */
+	/* good is true if the output files only if there wasn't any error, then write the file */
 	if (good)
 	{
 		/* write the ob file */
@@ -159,6 +160,8 @@ void compile_file(char *file_name)
 	DestroyList(symbols);
 }
 
+/*good != just if there is ent obj, if not, delete ent file
+this method create and write the ent file*/
 void write_ent_file(FILE* ent_file, HEAD code, HEAD symbols, char* file_name)
 {
 	int good=0;
@@ -189,6 +192,7 @@ void write_ent_file(FILE* ent_file, HEAD code, HEAD symbols, char* file_name)
 	}
 }
 
+/*print the ext obj to file*/
 int write_symbol_to_ext_file_from_command(FILE* ext_file, symbol_struct* symbol, command_struct* command)
 {
 	int i;
@@ -210,6 +214,8 @@ int write_symbol_to_ext_file_from_command(FILE* ext_file, symbol_struct* symbol,
 	return 0;
 }
 
+/*good != 0 if there is ext obj, else delete the ext file
+call the print to file method for each obj */
 int write_symbol_to_ext_file(FILE* ext_file, symbol_struct* symbol, HEAD code)
 {
 	int good = 0;
@@ -227,14 +233,12 @@ int write_symbol_to_ext_file(FILE* ext_file, symbol_struct* symbol, HEAD code)
 	return good;
 }
 
+/*create the ext file, if no ext obj delete it*/
 void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols, char* file_name)
 {
+	int good = 0;
 	ELM node;
-	int good;
-	symbol_struct* cs;
-
-	good = 0;
-	cs = GetFirstFromList(symbols, &node);
+	symbol_struct* cs = GetFirstFromList(symbols, &node);
 	if (cs == NULL){
 		if (remove(file_name) == 0) 
      		printf("Deleted successfully"); 
@@ -257,7 +261,7 @@ void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols, char* file_name)
 	}
 }
 
-/* return the size of the code part */
+/* get the size of the code part */
 int get_code_size(HEAD code)
 {
 	int code_size = 0;
@@ -275,7 +279,7 @@ int get_code_size(HEAD code)
 	return code_size;
 }
 
-/* return the size of the code part */
+/* get the size of the data part */
 int get_data_size(HEAD data)
 {
 	int data_size = 0;
@@ -307,6 +311,7 @@ int get_data_size(HEAD data)
 	return data_size;
 }
 
+/*create the ob file and call the print to file methode*/
 void write_ob_file(FILE* ob_file, HEAD code, HEAD data, HEAD symbols)
 {
 	ELM code_node, data_node;
@@ -337,17 +342,19 @@ void write_ob_file(FILE* ob_file, HEAD code, HEAD data, HEAD symbols)
 /* write a word to the ob file */
 void write_word(FILE* file, int address, unsigned int word, char are)
 {
-	/* the word & 0xffffff is because we write only 6 bytes */
+	/* the "& 0xfff" for get only 3 bytes */
 	fprintf(file, "%04d %03X %c\n", address, word & 0xfff, are);
 }
 
+/*arrange the command and argument as wish and call the print method*/
 void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbols)
 {
 	char are;
 	int num, succeded, address = command->address, i;
 	unsigned int word = 0;
 	symbol_struct* symbol;
-	/*write the command*/
+	/*arrange the bits of the command
+	are - if its A - absolut, E - extern, R - relative*/
 	word |= command->commandInfo->oppCode << 8;
 	word |= command->commandInfo->funct << 4;
 	if (command->arguments_num == 1)
@@ -361,8 +368,8 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 		word |= command->arguments[1].addressingMode;
 		are = 'A';
 	}
-	write_word(ob_file, address, word, 'A');
-	/* write the arguments */
+	write_word(ob_file, address, word, are);
+	/*arrange the arguments bits*/
 	for (i = 0; i < command->arguments_num; i++)
 	{
 		word = 0;
@@ -412,6 +419,7 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 	
 }
 
+/*simple as call*/
 void write_data_to_ob_file(FILE* ob_file, data_struct* ds)
 {
 	unsigned int word = 0;
@@ -439,23 +447,23 @@ void write_data_to_ob_file(FILE* ob_file, data_struct* ds)
 }
 
 /*
-Verify the following:
-	1. number of arguments
-	2. addressing mode of each argument
-	3. all symbols exist
-	4. go over the arguments with DIRECT and RELATIVE
-		and update the appropriate symbols as CODE_SYMBOLKIND
+check if valid:
+	number of arguments
+	addressing mode of every argument
+	symbols exist
+	chaeck arguments with DIRECT and RELATIVE
+	and update the right symbols as CODE_SYMBOLKIND
 */
 int check_command(char* file_name, command_struct* command, HEAD symbols)
 {
-	/* the message is static so it will not be allocated
-	each time that this fnction is being called */
+	/*message is static so it will not be allocated
+	each time this fnction called */
 	static char message[200];
 	int i, j, found;
 	symbol_struct* symbol;
 	if (command->commandInfo == NULL)
 	{
-		/* no need to give an error as this was checked already */
+		/*this allready checked beafor so no need for erorr message*/
 		return 0;
 	}
 	if (command->arguments_num !=
@@ -497,8 +505,7 @@ int check_command(char* file_name, command_struct* command, HEAD symbols)
 	return 1;
 }
 
-/* return 1 if there is a label in the line.
-if so, the label string will contain the label. */
+/* return 1 if the line contain symbol in it, if so the string will contain it*/
 int has_label(char* line, char* label)
 {
 	size_t i;
@@ -515,7 +522,7 @@ int has_label(char* line, char* label)
 	return 0;
 }
 
-/* return the command info associated with the command_name */
+/*return the information the command cotain*/
 CommandInfo* getCommandInfo(char* command_name)
 {
 	int num = sizeof(commandInfos) / sizeof(CommandInfo), i;
@@ -527,6 +534,7 @@ CommandInfo* getCommandInfo(char* command_name)
 	return NULL;
 }
 
+/*analyze if has lable, clean from white spaces, if data call the right method, else anlayze as command*/
 int analyze_line(char* file_name, int line_number, char* line, HEAD code, HEAD data, HEAD symbols, int* address)
 {
 	symbol_struct* symbol = NULL;
@@ -569,10 +577,12 @@ int analyze_line(char* file_name, int line_number, char* line, HEAD code, HEAD d
 	return analyze_cmd(file_name, line_number, label, command_name, line, code, data, symbols, address);
 }
 
+/*analyze the command - info, lable, arguments and size.
+arrange it as shuold*/
 int analyze_cmd(char* file_name, int line_number, char* label, char* command_name, char* line, HEAD code, HEAD data, HEAD symbols, int* address)
 {
-	/* the message is static so it will not be allocated
-	each time that this fnction is being called */
+	/*message is static so it will not be allocated
+	each time this fnction called */
 	static char message[200];
 	CommandInfo* commandInfo;
 	command_struct* command = NULL;
@@ -597,7 +607,7 @@ int analyze_cmd(char* file_name, int line_number, char* label, char* command_nam
 	}
 	else
 	{
-		/* no label */
+		/*if no label*/
 		command->label[0] = '\0';
 	}
 	if (!fill_arguments(file_name, line_number, line, command))
@@ -607,6 +617,7 @@ int analyze_cmd(char* file_name, int line_number, char* label, char* command_nam
 	return 1;
 }
 
+/*get the size that the command take(lines)*/
 int get_command_size(command_struct* command)
 {
 	int size;
@@ -626,6 +637,7 @@ int get_command_size(command_struct* command)
 	return 1;
 }
 
+/*arrange the argument from the line, check for errors*/
 int fill_arguments(char* file_name, int line_number, char* line, command_struct* command)
 {
 	int i = 0, j = 0, k;
@@ -676,6 +688,7 @@ int fill_arguments(char* file_name, int line_number, char* line, command_struct*
 	return 1;
 }
 
+/*fill the adrresing mode each command contain*/
 int fill_addressing_mode(argument_struct* argument)
 {
 	if (fill_immediete_addressing_mode(argument))
@@ -704,10 +717,10 @@ int fill_immediete_addressing_mode(argument_struct* argument)
 		return 0;
 	if (argument->argument_str[0] != '#')
 		return 0;
-	/* remove the # from the begining */
+	/*delete the # from the begin of the line*/
 	shift_left(argument->argument_str, 1);
-	/* ignore the returned value because this is just a test
-	if there is a number in the argument */
+	/* not use the returned value because this is just a check
+	if there is a number in argument */
 	get_number_from_string(argument->argument_str, &succeded);
 	if (succeded)
 		argument->addressingMode = IMMEDIETE;
@@ -726,7 +739,7 @@ int fill_register_addressing_mode(argument_struct* argument)
 		return 0;
 	if ((num < 0) || (num > 7))
 		return 0;
-	/* leave only the number of the register */
+	/*clean and leave just the number of the argument*/
 	shift_left(argument->argument_str, 1);
 	argument->addressingMode = REGISTER;
 	return 1;
@@ -748,16 +761,17 @@ int fill_relative_addressing_mode(argument_struct* argument)
 		return 0;
 	if (!symbol_is_legal(&argument->argument_str[1]))
 		return 0;
-	/* remove the & */
+	/* remove the %*/
 	shift_left(argument->argument_str, 1);
 	argument->addressingMode = RELATIVE;
 	return 1;
 }
 
+/*analyze data for each kind of data*/
 int analyze_data(char* file_name, int line_number, char* label, char* command_name, char* line, HEAD data, HEAD symbols, int* address)
 {
-	/* the message is static so it will not be allocated
-	each time that this fnction is being called */
+	/*message is static so it will not be allocated
+	each time this fnction called */
 	static char message[200];
 	if (strcmp(command_name, STRING_CMD) == 0)
 	{
@@ -814,7 +828,7 @@ int fill_symbol_name(char* file_name, int line_number, char* line, char* name)
 	name[j] = '\0';
 	while (line[i] != '\0')
 	{
-		/* check the case that there are extra
+		/* check the case that there are
 		 characters after the symbol */
 		if (!spaceOrTab(line[i]))
 		{
@@ -826,6 +840,7 @@ int fill_symbol_name(char* file_name, int line_number, char* line, char* name)
 	return symbol_is_legal(name);
 }
 
+/*find symbol name in the list of symbols*/
 symbol_struct* find_symbol(char* name, HEAD symbols)
 {
 	ELM _node;
@@ -843,6 +858,7 @@ symbol_struct* find_symbol(char* name, HEAD symbols)
 	return NULL;
 }
 
+/*simple as calld*/
 symbol_struct* get_or_create_symbol_struct(char* file_name, int line_number, char* line, HEAD symbols)
 {
 	char name[SYMBOL_MAX_LEN];
@@ -871,6 +887,7 @@ symbol_struct* get_or_create_symbol_struct(char* file_name, int line_number, cha
 	return symbol;
 }
 
+/*simple as called*/
 int analyze_entry_cmd(char* file_name, int line_number, char* label, char* line, HEAD data, HEAD symbols, int* address)
 {
 	symbol_struct* symbol = get_or_create_symbol_struct(file_name, line_number, line, symbols);
@@ -880,6 +897,7 @@ int analyze_entry_cmd(char* file_name, int line_number, char* label, char* line,
 	return 1;
 }
 
+/*simple as called*/
 int analyze_extern_cmd(char* file_name, int line_number, char* label, char* line, HEAD data, HEAD symbols, int* address)
 {
 	symbol_struct* symbol = get_or_create_symbol_struct(file_name, line_number, line, symbols);
@@ -890,7 +908,7 @@ int analyze_extern_cmd(char* file_name, int line_number, char* label, char* line
 	return 1;
 }
 
-/* fill the numbers of .data */
+/* get the number of data and fill it */
 int fill_numbers(data_struct* ds, char* file_name, int line_number, char* line)
 {
 	char num_str[LINE_LEN];
@@ -925,6 +943,7 @@ int fill_numbers(data_struct* ds, char* file_name, int line_number, char* line)
 	return 1;
 }
 
+/*analyze data command and create and arrange the symbol obj*/
 int analyze_data_cmd(char* file_name, int line_number, char* label, char* line, HEAD data, HEAD symbols, int* address)
 {
 	symbol_struct* symbol = NULL;
@@ -972,6 +991,7 @@ int analyze_data_cmd(char* file_name, int line_number, char* label, char* line, 
 	return 1;
 }
 
+/*analyze string command and create and arrange the symbol obj*/
 int analyze_string_cmd(char* file_name, int line_number, char* label, char* line, HEAD data, HEAD symbols, int* address)
 {
 	int first_quot = 0, last_quot = 0, i = 0, j = 0;
