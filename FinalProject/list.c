@@ -67,7 +67,7 @@ HEAD CreateList(ELM(*create_elm)(),
 	return root;
 }
 
-void DestroyList(HEAD head)
+void FreeList(HEAD head)
 {
 	list_root* root = (list_root*)head;
 	node* n = root->head;

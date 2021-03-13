@@ -7,7 +7,8 @@ int spaceOrTab(char c)
 	return (c == ' ') || (c == '\t');
 }
 
-/*clean begin and end from spaces and copy src to dst*/
+/* copy src to dst without spaces in the begining and in
+the end */
 void clean(char* src, char* dst)
 {
 	int i = 0, j = 0;
@@ -22,7 +23,7 @@ void clean(char* src, char* dst)
 	dst[j] = '\0';
 }
 
-/*1 if upper-case letter*/
+/* return 1 if c is upper case letter */
 int is_upper_letter(char c)
 {
 	if ((c >= 'A') && (c <= 'Z'))
@@ -31,7 +32,7 @@ int is_upper_letter(char c)
 		return 0;
 }
 
-/*1 if lower-case letter*/
+/* return 1 if c is lower case letter */
 int is_lower_letter(char c)
 {
 	if ((c >= 'a') && (c <= 'z'))
@@ -40,7 +41,7 @@ int is_lower_letter(char c)
 		return 0;
 }
 
-/*1 if letter*/
+/* return 1 if c is a letter */
 int is_letter(char c)
 {
 	return is_upper_letter(c) || is_lower_letter(c);
@@ -54,7 +55,6 @@ int is_number(char c)
 		return 0;
 }
 
-/* check if num_str contain a number if it is the succeded will be 1. otherwise succeded will be 0.*/
 int get_number_from_string(char* num_str, int* succeded)
 {
 	int num = 0;
@@ -62,8 +62,7 @@ int get_number_from_string(char* num_str, int* succeded)
 	return num;
 }
 
-/* move the str string number of steps to left */
-void shift_left(char* str, int num)
+void move_left(char* str, int num)
 {
 	int i, j, str_len;
 	for (i = 0; i < num; i++)
@@ -75,3 +74,4 @@ void shift_left(char* str, int num)
 		}
 	}
 }
+

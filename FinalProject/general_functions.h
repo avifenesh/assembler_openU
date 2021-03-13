@@ -12,6 +12,6 @@ int is_number(char c);
 /* check if num_str contain a number if it is the succeded will be 1. otherwise succeded will be 0.*/
 int get_number_from_string(char* num_str, int* succeded);
 /* move the str string number of steps to left */
-void shift_left(char* str, int num);
+void move_left(char* str, int num);
 
 #endif

@@ -50,13 +50,6 @@ typedef enum AddressingMode
 	REGISTER
 } AddressingMode;
 
-/*argument kind enum*/
-typedef enum ArgumentKind
-{
-	SOURCE,
-	TARGET
-} ArgumentKind;
-
 /*data kinds enum*/
 typedef enum DataKind
 {
@@ -66,6 +59,12 @@ typedef enum DataKind
 	EXTERNAL_DATAKIND = ENTRY_DATAKIND <<1
 } DataKind;
 
+/*argument kind enum*/
+typedef enum ArgumentKind
+{
+	SOURCE,
+	TARGET
+} ArgumentKind;
 /*symbol kinds enum*/
 typedef enum SymbolKind
 {

@@ -70,7 +70,7 @@ void compile_file(char *file_name)
 	FILE* assembler_file, *ob_file, *ext_file, *ent_file;
 	/* lists of code, data and symbols */
 	HEAD code = NULL, data = NULL, symbols = NULL;
-	int line_number = 0, address = 100, good = 1;
+	int line_number = 0, address = 100, ok = 1;
 	command_struct* temp_command;
 	ELM _node;
 	sprintf(assembler_file_name, "%s.as", file_name);
@@ -95,22 +95,22 @@ void compile_file(char *file_name)
 		if ((strlen(cleaned_line) == 0) || /* empty line */
 			(cleaned_line[0] == ';')) /* comment line */
 			continue;
-		good = good && analyze_line(assembler_file_name, line_number, cleaned_line, code, data, symbols, &address);
+		ok = ok && analyze_line(assembler_file_name, line_number, cleaned_line, code, data, symbols, &address);
 	}
 	fclose(assembler_file);
 	/* go over commands and check if its valid*/
 	temp_command = GetFirstFromList(code, &_node);
 	if (temp_command != NULL)
 	{
-		good = good && check_command(assembler_file_name, temp_command, symbols);
+		ok = ok && check_command(assembler_file_name, temp_command, symbols);
 		while (HasMoreInList(&_node))
 		{
 			temp_command = GetNextFromList(&_node);
-			good = good && check_command(assembler_file_name, temp_command, symbols);
+			ok = ok && check_command(assembler_file_name, temp_command, symbols);
 		}
 	}
-	/* good is true if the output files only if there wasn't any error, then write the file */
-	if (good)
+	/* ok is true if the output files only if there wasn't any error, then write the file */
+	if (ok)
 	{
 		/* write the ob file */
 		sprintf(ob_file_name, "%s.ob", file_name);
@@ -155,16 +155,16 @@ void compile_file(char *file_name)
 		printf("Finish processing assembler file %s with errors\n", assembler_file_name);
 	}
 	/* free the lists */
-	DestroyList(code);
-	DestroyList(data);
-	DestroyList(symbols);
+	FreeList(code);
+	FreeList(data);
+	FreeList(symbols);
 }
 
-/*good != just if there is ent obj, if not, delete ent file
+/*ok != just if there is ent obj, if not, delete ent file
 this method create and write the ent file*/
 void write_ent_file(FILE* ent_file, HEAD code, HEAD symbols, char* file_name)
 {
-	int good=0;
+	int ok=0;
 	ELM _node;
 	symbol_struct* cs = GetFirstFromList(symbols, &_node);
 	if (cs == NULL){
@@ -175,16 +175,16 @@ void write_ent_file(FILE* ent_file, HEAD code, HEAD symbols, char* file_name)
 		return;}
 
 	if (cs->kinds & ENTRY_SYMBOLKIND){
-	    good = 1;
+	    ok = 1;
 		fprintf(ent_file, "%s %04d\n", cs->name, cs->value);}
 	while (HasMoreInList(&_node))
 	{
 		cs = GetNextFromList(&_node);
 		if (cs->kinds & ENTRY_SYMBOLKIND){
-			good = 1;
+			ok = 1;
 			fprintf(ent_file, "%s %04d\n", cs->name, cs->value);}
 	}
-	if (good == 0){
+	if (ok == 0){
 		if (remove(file_name) == 0) 
      		printf("Deleted successfully"); 
    		else
@@ -214,29 +214,29 @@ int write_symbol_to_ext_file_from_command(FILE* ext_file, symbol_struct* symbol,
 	return 0;
 }
 
-/*good != 0 if there is ext obj, else delete the ext file
+/*ok != 0 if there is ext obj, else delete the ext file
 call the print to file method for each obj */
 int write_symbol_to_ext_file(FILE* ext_file, symbol_struct* symbol, HEAD code)
 {
-	int good = 0;
+	int ok = 0;
 	ELM node;
 	command_struct* command = GetFirstFromList(code, &node);
 	if (command != NULL)
 	{
-		good += write_symbol_to_ext_file_from_command(ext_file, symbol, command);
+		ok += write_symbol_to_ext_file_from_command(ext_file, symbol, command);
 	}
 	while (HasMoreInList(&node))
 	{
 		command = GetNextFromList(&node);
-		good += write_symbol_to_ext_file_from_command(ext_file, symbol, command);
+		ok += write_symbol_to_ext_file_from_command(ext_file, symbol, command);
 	}
-	return good;
+	return ok;
 }
 
 /*create the ext file, if no ext obj delete it*/
 void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols, char* file_name)
 {
-	int good = 0;
+	int ok = 0;
 	ELM node;
 	symbol_struct* cs = GetFirstFromList(symbols, &node);
 	if (cs == NULL){
@@ -246,13 +246,13 @@ void write_ext_file(FILE* ext_file, HEAD code, HEAD symbols, char* file_name)
       		printf("Unable to delete the file"); 
 		return;}
 
-	good += write_symbol_to_ext_file(ext_file, cs, code);
+	ok += write_symbol_to_ext_file(ext_file, cs, code);
 	while (HasMoreInList(&node))
 	{
 		cs = GetNextFromList(&node);
-		good += write_symbol_to_ext_file(ext_file, cs, code);
+		ok += write_symbol_to_ext_file(ext_file, cs, code);
 		if (cs == NULL){
-			if (good == 0){
+			if (ok == 0){
 				if (remove(file_name) == 0) 
      				printf("Deleted successfully"); 
    		    	else
@@ -386,19 +386,6 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 			word = num;
 			are = 'A';
 			break;
-		case DIRECT:
-			symbol = find_symbol(command->arguments[i].argument_str, symbols);
-			if (symbol->kinds & EXERNAL_SYMBOLKIND)
-			{
-				word = 0;
-				are = 'E';
-			}
-			else
-			{
-				word = symbol->value;
-				are = 'R';
-			}
-			break;
 		case RELATIVE:
 			symbol = find_symbol(command->arguments[i].argument_str, symbols);
 			if (symbol->kinds & EXERNAL_SYMBOLKIND)
@@ -411,6 +398,19 @@ void write_command_to_ob_file(FILE* ob_file, command_struct* command, HEAD symbo
 				word =(symbol->value - command->address);
 				word-=1;
 				are = 'A';
+			}
+			break;
+		case DIRECT:
+			symbol = find_symbol(command->arguments[i].argument_str, symbols);
+			if (symbol->kinds & EXERNAL_SYMBOLKIND)
+			{
+				word = 0;
+				are = 'E';
+			}
+			else
+			{
+				word = symbol->value;
+				are = 'R';
 			}
 			break;
 		}
@@ -426,18 +426,18 @@ void write_data_to_ob_file(FILE* ob_file, data_struct* ds)
 	int i, str_len;
 	switch (ds->kind)
 	{
+	case DATA_DATAKIND:
+		for (i = 0; i < ds->int_values_num; i++)
+		{
+			word = ds->int_values[i];
+			write_word(ob_file, ds->address + i, word, 'A');
+		}
+		break;	
 	case STRING_DATAKIND:
 		str_len = strlen(ds->str_value);
 		for (i = 0; i <= str_len; i++)
 		{
 			word = ds->str_value[i];
-			write_word(ob_file, ds->address + i, word, 'A');
-		}
-		break;
-	case DATA_DATAKIND:
-		for (i = 0; i < ds->int_values_num; i++)
-		{
-			word = ds->int_values[i];
 			write_word(ob_file, ds->address + i, word, 'A');
 		}
 		break;
@@ -718,7 +718,7 @@ int fill_immediete_addressing_mode(argument_struct* argument)
 	if (argument->argument_str[0] != '#')
 		return 0;
 	/*delete the # from the begin of the line*/
-	shift_left(argument->argument_str, 1);
+	move_left(argument->argument_str, 1);
 	/* not use the returned value because this is just a check
 	if there is a number in argument */
 	get_number_from_string(argument->argument_str, &succeded);
@@ -740,7 +740,7 @@ int fill_register_addressing_mode(argument_struct* argument)
 	if ((num < 0) || (num > 7))
 		return 0;
 	/*clean and leave just the number of the argument*/
-	shift_left(argument->argument_str, 1);
+	move_left(argument->argument_str, 1);
 	argument->addressingMode = REGISTER;
 	return 1;
 }
@@ -762,7 +762,7 @@ int fill_relative_addressing_mode(argument_struct* argument)
 	if (!symbol_is_legal(&argument->argument_str[1]))
 		return 0;
 	/* remove the %*/
-	shift_left(argument->argument_str, 1);
+	move_left(argument->argument_str, 1);
 	argument->addressingMode = RELATIVE;
 	return 1;
 }
@@ -994,7 +994,7 @@ int analyze_data_cmd(char* file_name, int line_number, char* label, char* line, 
 /*analyze string command and create and arrange the symbol obj*/
 int analyze_string_cmd(char* file_name, int line_number, char* label, char* line, HEAD data, HEAD symbols, int* address)
 {
-	int first_quot = 0, last_quot = 0, i = 0, j = 0;
+	int first_q = 0, last_q = 0, i = 0, j = 0;
 	symbol_struct* symbol = NULL;
 	data_struct* ds = NULL;
 	if (strlen(label) > 0)
@@ -1022,19 +1022,19 @@ int analyze_string_cmd(char* file_name, int line_number, char* label, char* line
 		i++;
 	if (line[i] != '"')
 	{
-		print_error(file_name, line_number, "No quotation mark in string");
+		print_error(file_name, line_number, "No quoation mark in string");
 		return 0;
 	}
-	first_quot = i;
+	first_q = i;
 	i++;
 	while ((line[i] != '\0') && (line[i] != '"'))
 		i++;
 	if (line[i] != '"')
 	{
-		print_error(file_name, line_number, "No quotation mark in string");
+		print_error(file_name, line_number, "No quoation mark in string");
 		return 0;
 	}
-	last_quot = i;
+	last_q = i;
 	i++;
 	while ((line[i] != '\0') && spaceOrTab(line[i]))
 		i++;
@@ -1049,10 +1049,10 @@ int analyze_string_cmd(char* file_name, int line_number, char* label, char* line
 		print_error(file_name, line_number, "Failed to allocate data");
 		return 0;
 	}
-	first_quot++;
-	while (first_quot < last_quot)
+	first_q++;
+	while (first_q < last_q)
 	{
-		ds->str_value[j++] = line[first_quot++];
+		ds->str_value[j++] = line[first_q++];
 	}
 	ds->str_value[j] = '\0';
 	ds->kind = STRING_DATAKIND;

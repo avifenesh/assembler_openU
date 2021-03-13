@@ -15,7 +15,7 @@ HEAD CreateList(ELM(*create_elm)(),
 	void(*free_elm)(ELM));
 
 /*destroy the linked-list*/
-void DestroyList(HEAD head);
+void FreeList(HEAD head);
 
 /*append a new elm to end of list
 and return it*/
