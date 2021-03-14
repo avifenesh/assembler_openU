@@ -9,6 +9,10 @@
 void compile_files(char *file_names[], int numer_of_files);
 /* get a file, compile it and write to files*/
 void compile_file(char *file_name);
+/* chaeck the arguments and arrange them in the command */
+int fill_arguments(char* file_name, int line_number, char* line, command_struct* command);
+/* get and fill the addrfessing modes */
+int fill_addressing_mode(argument_struct* argument);
 /* analyze a line and arrnge data, code and symbol lists */
 int analyze_line(char* file_name, int line_number, char* line, HEAD code, HEAD data, HEAD symbols, int* address);
 /* analyze a command and arrange the data, code and symbols lists */
@@ -23,11 +27,15 @@ int analyze_data_cmd(char* file_name, int line_number, char* label, char* line, 
 int analyze_entry_cmd(char* file_name, int line_number, char* label, char* line, HEAD data, HEAD symbols, int* address);
 /* analyze a .extern line arrange the data, code and symbols lists */
 int analyze_extern_cmd(char* file_name, int line_number, char* label, char* line, HEAD data, HEAD symbols, int* address);
-/* chaeck the arguments and arrange them in the command */
-int fill_arguments(char* file_name, int line_number, char* line, command_struct* command);
-/* get and fill the addrfessing modes */
-int fill_addressing_mode(argument_struct* argument);
 
+/* fill immediete mode */
+int fill_immediete_addressing_mode(argument_struct* argument);
+/* fill register mode */
+int fill_register_addressing_mode(argument_struct* argument);
+/* fill direct mode */
+int fill_direct_addressing_mode(argument_struct* argument);
+/* fill relative mode */
+int fill_relative_addressing_mode(argument_struct* argument);
 /* return the size of the command in words */
 int get_command_size(command_struct* command);
 
@@ -43,14 +51,6 @@ int check_command(char* file_name, command_struct* command, HEAD symbols);
 /* return symbol if exist */
 symbol_struct* find_symbol(char* name, HEAD symbols);
 
-/* fill immediete mode */
-int fill_immediete_addressing_mode(argument_struct* argument);
-/* fill register mode */
-int fill_register_addressing_mode(argument_struct* argument);
-/* fill direct mode */
-int fill_direct_addressing_mode(argument_struct* argument);
-/* fill relative mode */
-int fill_relative_addressing_mode(argument_struct* argument);
 
 /*return 1 if a symbol is valid */
 int symbol_is_legal(char* name);
