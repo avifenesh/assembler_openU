@@ -21,7 +21,7 @@ Pass the file names without the `.as` extension. Each name is assembled on its o
 ./assembler prog1 prog2
 ```
 
-For `prog1.as` it writes `prog1.ob` next to the source, plus `prog1.ext` and `prog1.ent` when the file uses externals or entries. Nothing is written for a file with errors; each error is printed with the file name and line number.
+For `prog1.as` it writes `prog1.ob` next to the source, plus `prog1.ext` and `prog1.ent` when the file uses externals or entries. Nothing is written for a file with errors. Processing stops at the first error, which is printed with the file name and line number.
 
 ## Language
 
